@@ -1,4 +1,5 @@
 var mongoose = require("mongoose");
+var bcrypt = require("bcrypt-nodejs");
 
 /*
 require에 true 대신 배열이 들어갔다, 배열을 사용해서 커스텀 에러메세지를 만들수 있다.
@@ -62,7 +63,6 @@ userSchema.path("password").validate(function(v) {
     if(!user.passwordConfirmation) {
       user.invalidate("passwordConfirmation", "비밀번호를 입력했는지 확인하세요!");
     }
-
     if(user.password !== user.passwordConfirmation) {
       user.invalidate("passwordConfirmation", "비밀번호 확인이 일치하지 않습니다!");
     }
@@ -73,7 +73,15 @@ userSchema.path("password").validate(function(v) {
     if(!user.currentPassword) {
       user.invalidate("currentPassword", "현재 비밀번호를 입력했는지 확인하세요!");
     }
-    if(user.currentPassword && user.currentPassword != user.originalPassword) {
+    // if(user.currentPassword && user.currentPassword != user.originalPassword) {
+    //   user.invalidate("currentPassword", "현재 비밀번호가 맞는지 확인하세요!");
+    // }
+    /*
+    bcrypt의 compareSync 함수를 사용해서 저장된 hash와 입력받은 password의 hash가 일치하는지 확인한다.
+    compareSync 함수의 첫번째 파라미터는 입력받은 text값이고 두번째 파라미터는 user의 password hash값이다.
+    text값을 hash로 만들고 일치하는지 비교하는 과정이다.
+    */
+    if(user.currentPassword && !bcrypt.compareSync(user.currentPassword, user.originalPassword)) {
       user.invalidate("currentPassword", "현재 비밀번호가 맞는지 확인하세요!");
     }
     if(user.newPassword !== user.passwordConfirmation) {
@@ -81,6 +89,33 @@ userSchema.path("password").validate(function(v) {
     }
   }
 });
+
+// hash password
+/*
+Schema.pre 함수는 첫번째 파라미터로 설정된 event가 일어나기 전에 먼저 콜백함수를 실행시킨다.
+"save" 이벤트는 Model.create, Model.save 함수 실행시 발생하는 event이다.
+즉, user를 생성하거나 수정한 뒤 save 함수를 실행할 때 콜백함수가 먼저 호출된다.
+*/
+userSchema.pre("save", function (next) {
+  var user = this;
+  // isModified 함수는 해당 값이 db에 기록된 값과 비교해서 변경된 경우 true, 그렇지 않은 경우 false를 return하는 함수이다.
+  if(!user.isModified("password")) {
+    return next();
+  } else {
+    // user.password의 값이 변경된 경우에는 bcrypt.hashSync 함수로 password를 hash값으로 바꾼다.
+    // hash 알고리즘을 사용하여 값을 변환하면 초기 입력값을 알아내기란 거의 불가능하다.
+    // 보안을 위해서는 초기값을 DB 서버에 저장하기 보다는 hash로 변환된 값을 저장하는것이 안전하다.
+    user.password = bcrypt.hashSync(user.password);
+    return next();
+  }
+});
+
+// model methods
+// user model의 password hash와 입력받은 password text를 비교하는 method 이다.
+userSchema.methods.authenticate = function(password) {
+  var user = this;
+  return bcrypt.compareSync(password, user.password);
+};
 
 // model & exports
 var User = mongoose.model("user", userSchema);
