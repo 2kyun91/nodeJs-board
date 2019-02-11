@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <% include ../partials/head %>
+</head>
+
+<body>
+  <% include ../partials/nav %>
+
+  <div class="container post post-index">
+    <% include ./partials/header ﻿%>
+
+    <div class="buttons">
+      <a class="btn btn-default" href="/posts/new">New</a>
+    </div>
+
+    <table class="table table-striped posts">
+      <thead>
+        <tr>
+          <th class="title">글 제목</th>
+          <th class="date">작성일</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% if(posts == null || posts.length == 0){ %>
+        <tr>
+          <td class="noData" colspan=100> 등록된 게시글이 없습니다.</td>
+        </tr>
+        <% } %>
+        <% posts.forEach(function(post) { %>
+        <tr>
+          <td class="title">
+            <a href="/posts/<%= post._id %>">
+              <div>
+                <%= post.title %>
+              </div>
+            </a>
+          </td>
+          <td class="date">
+            <%= post.createdDate %>
+          </td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div> <!-- container end -->
+</body>
+
+</html>

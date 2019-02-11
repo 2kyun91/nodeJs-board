@@ -25,6 +25,7 @@ app.use(methodOverride("_method"));
 
 // Routes
 app.use("/", require("./routes/home"));
+app.use("/posts", require("./routes/posts"));
 
 // port 세팅
 app.listen(3000, function() {
