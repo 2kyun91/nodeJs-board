@@ -8,10 +8,29 @@ false로 설정하면 DB에서 값을 읽어 올때 해당 값을 읽어오라�
 비밀번호 같은 정보는 중요하기 때문에 DB에서 값을 읽어오지 않게 설정한다.
 */
 var userSchema = mongoose.Schema({
-  username : {type : String, required : [true, "이름은 필수항목 입니다."], unique : true},
-  password : {type : String, required : [true, "비밀번호는 필수항목 입니다."], select : false},
-  name : {type : String, required : [true, "Name is required"]},
-  email : {type : String}
+  username : {
+    type : String,
+    required : [true, "사용자명은 필수항목 입니다."],
+    match : [/^.{4,12}$/,"4자 ~ 12자만 가능합니다!"], // 첫번째 파라미터 : 정규식, 두번째 파라미터 : 에러메세지
+    trim : true, // 문자열 앞뒤에 빈칸이 있는경우 제거해주는 옵션이다.
+    unique : true
+  },
+  password : {
+    type : String,
+    required : [true, "비밀번호는 필수항목 입니다."],
+    select : false
+  },
+  name : {
+    type : String,
+    required : [true, "이름은 필수항목 입니다."],
+    match : [/^.{2,12}$/,"4자 ~ 12자만 가능합니다!"],
+    trim : true
+  },
+  email : {
+    type : String,
+    match : [/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+.[a-zA-Z]{2,}$/,"이메일 형식만 가능합니다!"],
+    trim : true
+  }
 }, {
   toObject : {virtuals : true}
 });
@@ -53,6 +72,8 @@ userSchema.virtual("newPassword")
 /*
 비밀번호 유효성 체크 함수
 */
+var passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,16}$/;
+var passwordRegexErrorMessage = "최소 8자의 영문과 숫자 조합만 가능합니다!";
 userSchema.path("password").validate(function(v) {
   var user = this; // this는 user model이다.
 
@@ -63,7 +84,12 @@ userSchema.path("password").validate(function(v) {
     if(!user.passwordConfirmation) {
       user.invalidate("passwordConfirmation", "비밀번호를 입력했는지 확인하세요!");
     }
-    if(user.password !== user.passwordConfirmation) {
+    // if(user.password !== user.passwordConfirmation) {
+    //   user.invalidate("passwordConfirmation", "비밀번호 확인이 일치하지 않습니다!");
+    // }
+    if(!passwordRegex.test(user.password)) {
+      user.invalidate("password", passwordRegexErrorMessage);
+    } else if(user.password !== user.passwordConfirmation) {
       user.invalidate("passwordConfirmation", "비밀번호 확인이 일치하지 않습니다!");
     }
   }
@@ -84,7 +110,12 @@ userSchema.path("password").validate(function(v) {
     if(user.currentPassword && !bcrypt.compareSync(user.currentPassword, user.originalPassword)) {
       user.invalidate("currentPassword", "현재 비밀번호가 맞는지 확인하세요!");
     }
-    if(user.newPassword !== user.passwordConfirmation) {
+    // if(user.newPassword !== user.passwordConfirmation) {
+    //   user.invalidate("passwordConfirmation", "비밀번호 확인이 일치하지 않습니다!");
+    // }
+    if(user.newPassword && !passwordRegex.test(user.newPassword)) {
+      user.invalidate("newPassword", passwordRegexErrorMessage);
+    } else if(user.newPassword !== user.passwordConfirmation) {
       user.invalidate("passwordConfirmation", "비밀번호 확인이 일치하지 않습니다!");
     }
   }
