@@ -11,6 +11,12 @@ connect-flash를 사용하기 위해서는 express-session 패키지가 필요�
 var flash = require("connect-flash");
 var session = require("express-session");
 
+/*
+passport가 아닌 config/passport.js를 변수에 담는다.
+passport와 passport-local 패키지는 index.js에 require 되지 않고 config의 passport.js에서 require된다.
+*/
+var passport = require("./config/passport");
+
 var app = express();
 
 // DB 세팅
@@ -44,6 +50,29 @@ session은 서버에서 접속자를 구분시키는 역할을 한다.
 secret 옵션은 hash를 생성하는데 사용되는 값으로 비밀번호 정도로 생각하면 된다.
 */
 app.use(session({secret : "MySecret", resave : true, saveUninitialized : true}));
+
+// Passport
+/*
+passport.initialize()는 passport를 초기화 시켜주는 함수이고 passport.session()는 passport를 session과 연결해 주는 함수로 둘다 반드시 필요하다.
+session은 express-session package로부터 생성되므로 로그인을 구현하기 위해서는 express-session package와 session 생성 코드 "app.use(session({secret  : 'MySecret'}));"가 반드시 필요하다.
+*/
+app.use(passport.initialize());
+app.use(passport.session());
+
+// Custom Middlewares
+/*
+app.use에 함수를 넣는것을 미들웨어라고 한다.
+app.use에 있는 함수는 request가 올때마다 무조건 실행된다.
+app.use는 위에 있는것 부터 순서대로 실행되기 떄문에 반드시 route 위에 위치해야 한다.
+3개의 파라미터를 갖는데 함수안에 반드시 next()를 넣어줘야 다음으로 진행이 된다.
+req.isAuthenticated()는 passport에서 제공하는 함수로 현재 로그인이 되어있는지 아닌지를 true, false로 return한다.
+req.locals에 담겨진 변수는 ejs에서 바로 사용가능하다.
+*/
+app.use(function(req, res, next) {
+  res.locals.isAuthenticated = req.isAuthenticated(); // 로그인 여부
+  res.locals.currentUser = req.user; // 로그인 된 user의 정보
+  next();
+});
 
 // Routes
 app.use("/", require("./routes/home"));
