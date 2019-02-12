@@ -1,6 +1,7 @@
 var express = require("express");
 var router = express.Router();
 var User = require("../models/user");
+var util = require("../util");
 
 // Index
 router.get("/", function(req, res) {
@@ -32,7 +33,8 @@ router.post("/", function(req, res) {
     // user 생성시에 오류가 있다면 user,error flash를 만들어 new 페이지로 redirect한다.
     if(err) {
       req.flash("user", req.body);
-      req.flash("errors", parseError(err));
+      // req.flash("errors", parseError(err));
+      req.flash("errors", util.parseError(err));
       return res.redirect("/users/new");
     }
     res.redirect("/users/");
@@ -96,7 +98,8 @@ router.put("/:username", function(req, res, next) {
     user.save(function(err, user) {
       if(err) {
         req.flash("user", req.body);
-        req.flash("errors", parseError(err));
+        // req.flash("errors", parseError(err));
+        req.flash("errors", util.parseError(err));
         return res.redirect("/users/" + req.params.username + "/edit");
       }
       res.redirect("/users/" + user.username);
@@ -111,18 +114,18 @@ module.exports = router;
 user 생성시에 발생할 수 있는 오류는 여러가지(error 객체의 형식이 상이)이므로 parseError라는 함수를 따로 만들어서 err을 분석하고 일정한 형식으로 만든다.
 mongoose, mongoDB에서 내는 에러의 형태가 다르기 때문에 "{항목이름 : {message : '에러메세지'}}"로 통일시켜주는 함수이다.
 */
-function parseError(errors) {
-  console.log("errors : " + errors); // 원래 에러의 형태.
-  var parsed = {};
-  if(errors.name == "ValidationError") { // mongoose의 model validation error
-    for(var name in errors.errors) {
-      var validationError = errors.errors[name];
-      parsed[name] = {message : validationError.message};
-    }
-  } else if(errors.code == "11000" && errors.errmsg.indexOf("username") > 0) { // mongoDB에서 username이 중복되는 error
-    parsed.username = {message : "중복된 사용자명입니다!"};
-  } else { // 그 외 error
-    parsed.unhandled = JSON.stringify(errors);
-  }
-  return parsed;
-}
+// function parseError(errors) {
+//   console.log("errors : " + errors); // 원래 에러의 형태.
+//   var parsed = {};
+//   if(errors.name == "ValidationError") { // mongoose의 model validation error
+//     for(var name in errors.errors) {
+//       var validationError = errors.errors[name];
+//       parsed[name] = {message : validationError.message};
+//     }
+//   } else if(errors.code == "11000" && errors.errmsg.indexOf("username") > 0) { // mongoDB에서 username이 중복되는 error
+//     parsed.username = {message : "중복된 사용자명입니다!"};
+//   } else { // 그 외 error
+//     parsed.unhandled = JSON.stringify(errors);
+//   }
+//   return parsed;
+// }
