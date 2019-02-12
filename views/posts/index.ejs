@@ -18,24 +18,30 @@
     <table class="table table-striped posts">
       <thead>
         <tr>
-          <th class="title">글 제목</th>
+          <th class="title">제목</th>
+          <th class="author">작성자</th>
           <th class="date">작성일</th>
         </tr>
       </thead>
       <tbody>
         <% if(posts == null || posts.length == 0){ %>
         <tr>
-          <td class="noData" colspan=100> 등록된 게시글이 없습니다.</td>
+          <td class="noData" colspan=100> 등록된 게시글이 없습니다. </td>
         </tr>
         <% } %>
         <% posts.forEach(function(post) { %>
         <tr>
           <td class="title">
             <a href="/posts/<%= post._id %>">
-              <div>
+              <div class="ellipsis">
                 <%= post.title %>
               </div>
             </a>
+          </td>
+          <td class="author">
+            <div class="ellipsis">
+              <%= post.author ? post.author.username : "" %>
+            </div>
           </td>
           <td class="date">
             <%= post.createdDate %>
@@ -44,7 +50,7 @@
         <% }) %>
       </tbody>
     </table>
-  </div> <!-- container end -->
+  </div>
 </body>
 
 </html>

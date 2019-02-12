@@ -26,6 +26,9 @@
       <div class="row">
         <div class="col-sm-4 col-sm-push-8">
           <div class="post-info">
+            <div><span>작성자</span> :
+              <%= post.author ? post.author.username : "" %>
+            </div>
             <div><span>작성일</span> :
               <%= post.createdDate %>
               <%= post.createdTime %>
@@ -36,17 +39,17 @@
               <%= post.updatedTime %>
             </div>
             <% } %>
-          </div> <!-- post-info end -->
-        </div> <!-- col end-->
+          </div>
+        </div>
         <div class="col-sm-8 col-sm-pull-4">
           <div class="post-body">
             <%= post.body %>
           </div>
-        </div> <!-- col end-->
-      </div> <!-- row end -->
-    </div> <!-- post-container end -->
+        </div>
+      </div>
+    </div>
 
-  </div> <!-- container end -->
+  </div>
 </body>
 
 </html>

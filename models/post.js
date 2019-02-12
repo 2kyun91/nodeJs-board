@@ -5,8 +5,8 @@ var util = require("../util");
 var postSchema = mongoose.Schema({
   title : {type : String, required : [true, "제목은 필수항목!"]},
   body : {type : String, required : [true, "내용은 필수항목!"]},
-  // default 항목으로 기본값을 지정할수 있다, 함수명을 넣으면 해당 함수의 return값이 기본값이 된다.
-  createdAt : {type : Date, default : Date.now},
+  author : {type : mongoose.Schema.Types.ObjectId, ref : "user", required : true}, // post에 사용자 정보(user.id)를 기록하고 이 정보는 user collection에서 가져오는 것임을 ref를 통해서 지정한다.
+  createdAt : {type : Date, default : Date.now}, // default 항목으로 기본값을 지정할수 있다, 함수명을 넣으면 해당 함수의 return값이 기본값이 된다.
   updatedAt : {type : Date},
 }, {
   // virtual들을 object에서 보여주는 mongoose schema의 option이다.

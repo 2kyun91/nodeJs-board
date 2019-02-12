@@ -5,13 +5,17 @@ var util = require("../util");
 
 // Index
 router.get("/", function(req, res) {
-  // 나중에 생성된 data가 위로 오도록 설정한다.
-  // find와 function 사이에 sort함수가 들어간 형태이다.
-  // exec 함수 앞에 DB에서 데이터를 어떻게 찾을지, 어떻게 정렬할지 등을 함수로 정의하고
-  // exec안의 함수에서 해당 data를 받아와서 할일을 정하는 구조이다.
-  // 내림차순으로 정렬할 경우 -를 앞에 붙여준다, 두가지 이상으로 정렬하는 경우 빈칸을 넣고 각각의 항목을 적어주면 된다.
-  // object를 넣는 경우 "{createdAt : 1}" 식으로 넣어주면 된다.
-  Post.find({}).sort("-createdAt").exec(function(err, posts){
+  /*
+  나중에 생성된 data가 위로 오도록 설정한다.
+  find와 function 사이에 sort함수가 들어간 형태이다.
+  exec 함수 앞에 DB에서 데이터를 어떻게 찾을지, 어떻게 정렬할지 등을 함수로 정의하고
+  exec안의 함수에서 해당 data를 받아와서 할일을 정하는 구조이다.
+  내림차순으로 정렬할 경우 -를 앞에 붙여준다, 두가지 이상으로 정렬하는 경우 빈칸을 넣고 각각의 항목을 적어주면 된다.
+  object를 넣는 경우 "{createdAt : 1}" 식으로 넣어주면 된다.
+  Model.populate() 함수는 relationship이 형성되어 있는 항목의 값을 생성해 준다.
+  이 값을 바탕으로 실제 user의 값을 author에 생성하게 된다.
+  */
+  Post.find({}).populate("author").sort("-createdAt").exec(function(err, posts){
     if(err) {
       return res.json(err);
     }
@@ -28,6 +32,7 @@ router.get("/new", function(req, res) {
 
 // create
 router.post("/", function(req, res) {
+  req.body.author = req.user._id; // req.user._id를 가져와서 post의 author에 담는다.
   Post.create(req.body, function(err, post) {
     if(err) {
       req.flash("post", req.body);
@@ -40,7 +45,7 @@ router.post("/", function(req, res) {
 
 // Show
 router.get("/:id", function(req, res) {
-  Post.findOne({_id : req.params.id}, function(err, post) {
+  Post.findOne({_id : req.params.id}).populate("author").exec(function(err, post) {
     if(err) {
       return res.json(err);
     }
