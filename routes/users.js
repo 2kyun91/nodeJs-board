@@ -4,7 +4,7 @@ var User = require("../models/user");
 var util = require("../util");
 
 // Index
-router.get("/", function(req, res) {
+router.get("/", util.isLoggedin, function(req, res) {
   /*
   찾을 조건 find({})는 모든 값.
   sort 함수에는 "{username:1}" 기준으로 오름차순, -1은 내림차순
@@ -42,7 +42,7 @@ router.post("/", function(req, res) {
 });
 
 // Show
-router.get("/:username", function(req, res) {
+router.get("/:username", util.isLoggedin, function(req, res) {
   User.findOne({username : req.params.username}, function(err, user) {
     if(err) {
       return res.json(err);
@@ -57,7 +57,7 @@ edit은 처음 접속하는 경우에는 DB에서 값을 찾아 form에 기본�
 이를 위해 user에는  || {}를 사용하지 않고 user flash 값에 따라 오류의 여부를 체크한다.
 req.params.username은 주소에서 찾은 username이다.
 */
-router.get("/:username/edit", function(req, res) {
+router.get("/:username/edit", util.isLoggedin, checkPermission, function(req, res) {
   var user = req.flash("user")[0];
   var errors = req.flash("errors")[0] || {};
   if(!user) {
@@ -73,7 +73,7 @@ router.get("/:username/edit", function(req, res) {
 });
 
 // Update
-router.put("/:username", function(req, res, next) {
+router.put("/:username", util.isLoggedin, checkPermission, function(req, res, next) {
   /*
   findOneAndUpdate 대신에 findOne으로 값을 찾은 후에 값을 수정하고 user.save함수로 값을 저장한다.
   select 함수를 이용해 DB에서 어떤 항목을 선택할지 안할지 정할 수 있다.
@@ -106,6 +106,22 @@ router.put("/:username", function(req, res, next) {
     });
   });
 });
+
+// custom function
+// 게시물에 기록된 author와 로그인된 user.id를 비교해서 같은 경우 통과하고, 다르면 noPermission함수를 호출한다.
+function checkPermission(req, res, next) {
+  User.findOne({username : req.params.username}, function(err, user) {
+    if(err) {
+      return res.json(err);
+    }
+
+    if(user.id != req.user.id) {
+      return util.noPermission(req, res);
+    }
+
+    next();
+  });
+}
 
 module.exports = router;
 

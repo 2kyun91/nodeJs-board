@@ -12,12 +12,14 @@
     <% include ./partials/header %>
 
     <div class="buttons">
-      <a class="btn btn-default" href="/posts">뒤로가기</a>
-      <a class="btn btn-default" href="/posts/<%= post._id %>/edit">수정</a>
-      <form action="/posts/<%= post._id %>?_method=delete" method="post">
-        <a class="btn btn-default" href="#" onclick="confirm('정말 삭제하시겠습니까?')?this.parentElement.submit():null;">삭제</a>
-      </form>
-    </div>
+    <a class="btn btn-default" href="/posts">뒤로가기</a
+    <% if(isAuthenticated && currentUser.id == post.author.id){ %> <!-- 1 -->
+     <a class="btn btn-default" href="/posts/<%= post._id %>/edit">수정</a>
+     <form action="/posts/<%= post._id %>?_method=delete" method="post">
+      <a class="btn btn-default" href="#" onclick="confirm('정말 삭제하시겠습니까?')?this.parentElement.submit():null;">삭제</a>
+     </form>
+    <% } %>
+   </div>
 
     <div class="contentBox">
       <h3 class="contentBoxTop">

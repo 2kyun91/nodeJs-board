@@ -29,9 +29,31 @@ util.getTime = function(dateObj) {
   }
 };
 
-module.exports = util;
-
 // custom function
 function get2digits(num) {
   return ("0" + num).slice(-2);
 }
+
+// 로그인 여부 판별 함수
+// route에서 콜백으로 사용될 함수이다.
+// 로그인 된 상태이면 다음 콜백함수를 호출, 로그인이 안된 상태이면 로그인 페이지로 redirect.
+// isAuthenticated는 index.js 속에 req.locals에 등록한 변수이다.
+util.isLoggedin = function(req, res, next) {
+  if(req.isAuthenticated()) {
+    next();
+  } else {
+    req.flash("errors", {login : "로그인이 필요합니다."});
+    res.redirect("/login");
+  }
+};
+
+// 접근권한이 없는 경우에 에러 메세지를 호출
+// 접근권한이 있는지 없는지 판별하지는 않는다.
+// 콜백으로 사용하지 않고 일반 함수로 사용한다.
+util.noPermission = function(req, res) {
+  req.flash("errors", {login : "접근권한이 없습니다."});
+  req.logout();
+  res.redirect("/login");
+};
+
+module.exports = util;

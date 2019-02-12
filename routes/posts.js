@@ -24,14 +24,14 @@ router.get("/", function(req, res) {
 });
 
 // New
-router.get("/new", function(req, res) {
+router.get("/new", util.isLoggedin, function(req, res) {
   var post = req.flash("post")[0] || {};
   var errors = req.flash("errors")[0] || {};
   res.render("posts/new", {post : post, errors : errors});
 });
 
 // create
-router.post("/", function(req, res) {
+router.post("/", util.isLoggedin, function(req, res) {
   req.body.author = req.user._id; // req.user._id를 가져와서 post의 author에 담는다.
   Post.create(req.body, function(err, post) {
     if(err) {
@@ -54,7 +54,7 @@ router.get("/:id", function(req, res) {
 });
 
 // edit
-router.get("/:id/edit", function(req, res) {
+router.get("/:id/edit", util.isLoggedin, checkPermission, function(req, res) {
   var post = req.flash("post")[0];
   var errors = req.flash("errors")[0] || {};
   if(!post) {
@@ -71,7 +71,7 @@ router.get("/:id/edit", function(req, res) {
 });
 
 // update
-router.put("/:id", function(req, res) {
+router.put("/:id", util.isLoggedin, checkPermission, function(req, res) {
   // data 수정시 수정된 날짜를 업데이트한다.
   req.body.updatedAt = Date.now();
   // findOneAndUpdate는 기본설정이 schema에 있는 validation을 작동하지 않기 때문에 이 옵션을 통해서 validation이 작동하도록 설정해 주어야 한다.
@@ -86,7 +86,7 @@ router.put("/:id", function(req, res) {
 });
 
 // destroy
-router.delete("/:id", function(req, res) {
+router.delete("/:id", util.isLoggedin, checkPermission, function(req, res) {
   Post.remove({_id : req.params.id}, function(err) {
     if(err) {
       return res.json(err);
@@ -94,5 +94,21 @@ router.delete("/:id", function(req, res) {
     res.redirect("/posts");
   });
 });
+
+// custom function
+// 게시물에 기록된 author와 로그인된 user.id를 비교해서 같은 경우 통과하고, 다르면 noPermission함수를 호출한다.
+function checkPermission(req, res, next) {
+  Post.findOne({_id : req.params.id}, function(err, post) {
+    if(err) {
+      return res.json(err);
+    }
+
+    if(post.author != req.user.id) {
+      return util.noPermission(req, res);
+    }
+
+    next();
+  });
+}
 
 module.exports = router;
