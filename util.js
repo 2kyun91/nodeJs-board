@@ -1,7 +1,9 @@
 var util = {};
+
 /*
 routes/users.js 와 model/post.js에 있던 시간 관련 함수들을 module로 만들어 util.js로 분리했다.
 */
+
 util.parseError = function(errors) {
   var parsed = {};
   if(errors.name == "ValidationError") {

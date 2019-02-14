@@ -131,7 +131,7 @@ userSchema.pre("save", function (next) {
   var user = this;
   // isModified 함수는 해당 값이 db에 기록된 값과 비교해서 변경된 경우 true, 그렇지 않은 경우 false를 return하는 함수이다.
   if(!user.isModified("password")) {
-    return next();
+    return next(); // [!!!].return next()를 사용하면 현재 스코프를 종료하고 즉시 다음 콜백을 실행한다, return next() 아래의 코드는 실행하지 않는다.
   } else {
     // user.password의 값이 변경된 경우에는 bcrypt.hashSync 함수로 password를 hash값으로 바꾼다.
     // hash 알고리즘을 사용하여 값을 변환하면 초기 입력값을 알아내기란 거의 불가능하다.
