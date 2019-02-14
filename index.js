@@ -81,9 +81,9 @@ app.use("/users", require("./routes/users"));
 
 /* 일반 노드 포트 설정 */
 // port 세팅
-app.listen(3000, function() {
-  console.log("server on!");
-});
+// app.listen(3000, function() {
+//   console.log("server on!");
+// });
 
 /* 헤로쿠 포트 설정 */
 // port 세팅
