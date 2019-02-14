@@ -20,7 +20,7 @@ var passport = require("./config/passport");
 var app = express();
 
 // DB 세팅
-mongoose.connect(process.env.MONGO_DB, {useNewUrlParser:true});
+mongoose.connect(process.env.MONGO_DB, {useNewUrlParser:true, useMongoClient:true});
 var db = mongoose.connection;
 
 db.once("open", function() {
