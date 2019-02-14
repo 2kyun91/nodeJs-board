@@ -79,7 +79,16 @@ app.use("/", require("./routes/home"));
 app.use("/posts", require("./routes/posts"));
 app.use("/users", require("./routes/users"));
 
+/* 일반 노드 포트 설정 */
 // port 세팅
 app.listen(3000, function() {
   console.log("server on!");
+});
+
+/* 헤로쿠 포트 설정 */
+// port 세팅
+var port = process.env.PORT || 3000;
+app.listen(port, function() {
+  console.log(port);
+  console.log("Server On!");
 });
